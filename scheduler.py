@@ -54,14 +54,53 @@ def data_from_country(country):
     else:
         data=response.json()
         if "data" in data:
-            filtered_data = {}
-            filtered_data['country'] = data['countryCode']
-            filtered_data['datetime'] = data['data']['datetime']
-            filtered_data['carbonIntensity'] = data['data']['carbonIntensity']
-            filtered_data['fossilFuelPercentage'] = data['data']['fossilFuelPercentage']
-            filtered_data['_disclaimer'] = data['_disclaimer']
-            joblib.dump(filtered_data , 'data/data'+country)
+            output_data = {}
+            
+            output_data = process_data(data)
+            joblib.dump(output_data , 'data/data'+country)
 # Creating some tasks
+
+def process_data(data):
+    processed_data = {}
+    renewable_share= 100 - data['data']['fossilFuelPercentage']
+    if renewable_share <= 20:
+            processed_data['name'] = 'Dependiendo de combustibles fósiles'
+            processed_data['description'] = "Usamos un porcentaje de energía renovable menor al 20%, estamos en proceso de mejorar nuestra huella de carbono con proyectos para consumir energía de fuentes renovables"
+            processed_data['image'] = 'https://github.com/LuisFDuarte/SelloChainedCO2API/raw/main/images/fossil.jpg'
+              
+    if renewable_share > 20 and renewable_share <=50:
+            processed_data['name'] = 'Empezando la transición energética'
+            processed_data['description'] = "Usamos un porcentaje de energía renovable menor al 50%, estamos en camino de la transición energética para mejorar nuestra huella de carbono en nuestros productos o servicios."
+            processed_data['image'] = 'https://github.com/LuisFDuarte/SelloChainedCO2API/raw/main/images/greenmobility.jpg'
+            
+    if renewable_share > 50 and renewable_share <=80:
+            processed_data['name'] = 'Desarrollando la transición energética'
+            processed_data['description'] = "Usamos un porcentaje de energía renovable mayor al 50%, estamos activamente desarrollando nuestra transición energética para mejorar nuestra huella de carbono."
+            processed_data['image'] = 'https://github.com/LuisFDuarte/SelloChainedCO2API/raw/main/images/sustainableEnergy.jpg'
+            
+    if renewable_share > 80 and renewable_share <=100:
+            processed_data['name'] = 'Construimos productos y servicios con fuentes renovables'
+            processed_data['description'] = "Usamos un porcentaje de energía renovable mayor al 80%, estamos comprometidos con el uso de energías renovables para reducir  la huella de carbono de nuestros productos y servicios."
+            processed_data['image'] = 'https://github.com/LuisFDuarte/SelloChainedCO2API/raw/main/images/sustainableHouses.jpg'
+           
+    processed_data['attributes'] = [
+                {
+                    'trait_type': 'Energía renovable %',
+                    'value': renewable_share
+                },
+                {
+                    'trait_type': 'Intensidad de carbono gCO2/kWh', 
+                    'value': data['data']['carbonIntensity']
+                },
+                {
+                    'trait_type': 'País', 
+                    'value': data['countryCode']
+                } 
+    ]
+
+    processed_data['datetime'] = data['data']['datetime']
+    processed_data['_disclaimer'] = data['_disclaimer']
+    return processed_data
 
 @app.task('daily')
 async def do_daily():
