@@ -5,9 +5,20 @@ from fastapi import FastAPI, File, UploadFile,Form
 import os
 from os.path import isfile, join
 from fastapi.responses import FileResponse
-
+from fastapi.middleware.cors import CORSMiddleware
+origins = [
+    "http://localhost:3001",
+    "http://localhost",
+    "http://localhost:3000",
+]
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Import scheduler.py so we can modify the scheduler
 from scheduler import app as app_rocketry
 session = app_rocketry.session
