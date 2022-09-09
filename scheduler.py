@@ -6,6 +6,7 @@ from requests.exceptions import Timeout
 import joblib
 from dotenv import load_dotenv
 import os
+import time
 
 load_dotenv('keys.env')
 TOKEN_CO2 = str(os.getenv('TOKEN_CO2'))
@@ -58,6 +59,7 @@ def data_from_country(country):
             
             output_data = process_data(data)
             joblib.dump(output_data , 'data/data'+country)
+    time.sleep(0.3)
 # Creating some tasks
 
 def process_data(data):
